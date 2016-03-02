@@ -1,0 +1,326 @@
+@model Datalus.Web.Models.ViewModels.ItemViewModel<int>
+@{
+    ViewBag.Title = "Blogs";
+}
+
+
+<div data-ng-controller="blogsController as dashboard">
+    <h2 id="pageTitle"><span ng-bind="dashboard.pageTitle" class="ng-binding"></span> Blog</h2>
+    <h5 style="padding-bottom:10px;">What's on your mind?</h5>
+    <div class="content-bar">
+        <ul class="breadcrumb breadcrumb-angle">
+            <li><a href="#" aria-label="home"><i class="fa fa-home"></i></a></li>
+            <li><a href="/blog/list">Blogs</a></li>
+            <li class="active" id="breadcrumbCurrent"><span ng-bind="dashboard.pageTitle" class="ng-binding"></span> Blog</li>
+        </ul>
+    </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="panel" data-fill-color="true">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Complete the form.</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form id="frmContainer" name="dashboard.blogForm" data-ng-submit="dashboard.submitData()" novalidate>
+                            <div class="form-group">
+                                <label for="inputTitle">Title</label> <!--Error is the red outline for error validate-->
+                                <input type="text"
+                                       class="form-control ng-class:{'error': dashboard.showNewBlogErrors && !dashboard.blogForm.title.$valid}"
+                                       id="txtTitle"
+                                       name="title"
+                                       placeholder="Enter Title"
+                                       ng-model="dashboard.blog.title"
+                                       required
+                                       ng-required="true"
+                                       minlength="5"
+                                       maxlength="50" />
+                                <div role="alert" class="help-inline error">
+                                    <span class="error" ng-show="dashboard.showNewBlogErrors && dashboard.blogForm.title.$error.required">Title is required</span>
+                                    <span class="error" ng-show="dashboard.showNewBlogErrors && dashboard.blogForm.title.$error.minlength">Must be a minimum of 5 characters</span>
+                                    <span class="error" ng-show="dashboard.showNewBlogErrors && dashboard.blogForm.title.$error.maxlength">Must be a maximum of 50 characters</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inputAuthor">Author</label>
+                                <input type="text" class="form-control author ng-class:{'error': dashboard.showNewBlogErrors && !dashboard.blogForm.author.$valid}"
+                                       id="txtAuthor"
+                                       name="author"
+                                       placeholder="Enter Your Name"
+                                       ng-model="dashboard.blog.author"
+                                       required
+                                       ng-required="true"
+                                       minlength="5"
+                                       maxlength="50" />
+                                <div role="alert" class="help-inline error">
+                                    <span class="error" ng-show="dashboard.showNewBlogErrors && dashboard.blogForm.author.$error.required">Author is required</span>
+                                    <span class="error" ng-show="dashboard.showNewBlogErrors && dashboard.blogForm.author.$error.minlength">Must be a minimum of 5 characters</span>
+                                    <span class="error" ng-show="dashboard.showNewBlogErrors && dashboard.blogForm.author.$error.maxlength">Must be a maximum of 50 characters</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inputMessage">Blog Message</label>
+                                <textarea type="textarea" class="form-control message ng-class:{'error': dashboard.showNewBlogErrors && !dashboard.blogForm.message.$valid}"
+                                          id="txtBlog"
+                                          rows="10"
+                                          name="message"
+                                          placeholder="Enter Your Message"
+                                          ng-model="dashboard.blog.message"
+                                          required
+                                          ng-required="true"
+                                          minlength="2"
+                                          maxlength="1000"></textarea>
+                                <div role="alert" class="help-inline error">
+                                    <span class="error" ng-show="dashboard.showNewBlogErrors && dashboard.blogForm.message.$error.required">Message is required</span>
+                                    <span class="error" ng-show="dashboard.showNewBlogErrors && dashboard.blogForm.message.$error.minlength">Must be a minimum of 2 characters</span>
+                                    <span class="error" ng-show="dashboard.showNewBlogErrors && dashboard.blogForm.message.$error.maxlength">Must be a maximum of 1000 characters</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tags</label>
+                                <ui-select multiple ng-model="dashboard.blog.tags">
+                                    <ui-select-match placeholder="Select Tags">{{$item.name}}</ui-select-match>
+                                    <ui-select-choices repeat="tag in dashboard.tags | filter:$select.search">
+                                        <div ng-bind-html="tag.name"></div>
+                                    </ui-select-choices>
+                                </ui-select>
+                            </div>
+
+                            <div style="padding-top:30px;">
+                                <button type="submit" class="btn btn-success" ng-click="dashboard.changeSubmitText()" id="cmdSubmit">{{buttonText}}</button>
+                                <button type="button" class="btn btn-default" id="cmdReset" data-ng-click="dashboard.resetData()">Reset</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>     
+    </div>
+    <br />
+    <div class="alert alert-success" id="msgWindow" ng-show="dashboard.insertDataSuccessfully">
+         <strong>Success!</strong> You added a new blog.</div>
+</div>
+
+
+@section Scripts {
+
+    <script src="~/Scripts/datalus.services.blog.js"></script>
+    <script src="~/Scripts/datalus.services.tags.js"></script>
+    <script type="text/javascript">
+    
+    
+       //  BLOG SERVICE  ///////////////////////////////////////////////////////////////////////////////////////
+        (function () {
+            "use strict";
+            angular.module(APPNAME)
+                .factory('$blogsService', BlogsServiceFactory);
+            
+            //  $datalus is a reference to datalus.page object which is created in datalus.js
+            BlogsServiceFactory.$inject = ['$baseService', '$datalus'];    
+            
+            function BlogsServiceFactory($baseService, $datalus) {
+                var adatalusServiceObject = datalus.services.blog;
+                var newService = $baseService.merge(true, {}, adatalusServiceObject, $baseService);
+                return newService;
+            }
+        })();
+
+
+        //  BLOG TAG SERVICE  ///////////////////////////////////////////////////////////////////////////////////////
+        (function () {
+            "use strict";
+            angular.module(APPNAME)
+                .factory('$tagsService', TagsServiceFactory);
+
+            TagsServiceFactory.$inject = ['$baseService', '$datalus'];   
+
+            function TagsServiceFactory($baseService, $datalus) {
+                var adatalusServiceObject = datalus.services.tags;
+                var newService = $baseService.merge(true, {}, adatalusServiceObject, $baseService);
+                return newService;
+            }
+        })();
+
+
+        //  BLOG CONTROLLER  ///////////////////////////////////////////////////////////////////////////////////////
+        (function () { 
+            "use strict";
+            angular.module(APPNAME)
+                .controller('blogsController', BlogsController); 
+
+            BlogsController.$inject = ['$scope', '$baseController', '$blogsService', '$tagsService']; 
+
+            function BlogsController($scope, $baseController, $blogsService, $tagsService) { 
+                $baseController.merge(vm, $baseController);
+                
+                var vm = this;
+                vm.$blogsService = $blogsService;
+                vm.$tagsService = $tagsService;
+                vm.$scope = $scope; //similar to dot notation object
+                vm.blogForm = null;
+                vm.showNewBlogErrors = false;
+                vm.insertDataSuccessfully = false;
+                $scope.buttonText = "Submit";
+                vm.changeSubmitText = _changeSubmitText;
+                vm.pageTitle = null;
+                vm.id = 0;
+                vm.insertId = 0;
+                vm.getId = _getId;
+                vm.tagIds = null;
+                vm.submitData = _submitData;
+                vm.insert = _insert;
+                vm.update = _update;
+                vm.getById = _getById;
+                vm.getByIdSuccess = _getByIdSuccess;
+                vm.onError = _onError;
+
+                //Tags
+                vm.getTagsSuccess = _getTagsSuccess;
+                vm.getTagsError = _getTagsError;
+                vm.getTagIds=_getTagIds;
+
+                vm.resetData = _resetData;
+                vm.resetObject = {};
+                vm.notify = vm.$blogsService.getNotifier($scope);
+                vm.notifyTag = vm.$tagsService.getNotifier($scope);
+
+                _initializeId();
+
+
+                function _initializeId() {
+                    vm.pageTitle = "New";
+                    if (@Model.Item > 0 ){
+                        vm.pageTitle = "Edit";
+                    }
+                    if(@Model.Item != "0"){
+                        //console.log(vm.id);
+                        vm.id = @Model.Item;
+                        vm.getById(vm.id);
+                    }
+                    vm.$tagsService.ajaxGetAll(_getTagsSuccess, _getTagsError);
+                }
+
+
+                //TAG FUNCTIONS//////////////////////////////////////////////////////////////////////////////////
+                function _getTagsSuccess(data){
+                    console.log(data);
+                    vm.notifyTag (function(){
+                        vm.tags = data.items;
+                    });
+                }
+
+
+                function _getTagsError(response){
+                    console.log(response);
+                }
+
+
+                function _getTagIds(){
+                    vm.blog.tagIds=[];
+                    for(var x in vm.blog.tags){
+                        vm.blog.tagIds.push(vm.blog.tags[x].id);
+                    }
+                    return vm.blog.tagIds;
+                }
+                ////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+                function _changeSubmitText() {
+                    //$scope.buttonText = "Update";                   
+                    vm.pageTitle = "Edit";
+                }
+
+
+                function _getId(){
+                    var id;
+                    if(vm.insertId == 0) {
+                        id = 0;
+                    }else if (@Model.Item != 0){
+                        id = @Model.Item;
+                    }else{
+                        id = vm.insertId;
+                    }
+                    return id;
+                }
+
+
+                function _submitData() {
+                    console.log("submit clicked");
+                    vm.showNewBlogErrors = true;
+                    console.log(vm.blog);
+                    if (vm.blogForm.$valid) {
+                        console.log("form is valid");
+                        var id = _getId();
+                        if (id === 0) {
+                            console.log("insert");
+                            vm.getTagIds();
+                            vm.insert(); //function that calls your ajax
+                            vm.insertDataSuccessfully = true;
+                            
+                        } else {
+                            console.log(id);
+                            vm.getTagIds();                            
+                            vm.update(id); //add update Ajax here
+                            
+                        }
+                    }
+                }
+
+
+                function _insert() {
+                    var myData = vm.blog;                    
+                    vm.$blogsService.insert(myData, _insertSuccess, _onError); 
+                }
+
+
+                function _insertSuccess(data) {
+                    console.log("Insert Success");
+                    console.log(data);
+                    vm.insertId = data.item;                                       
+                }
+
+
+                function _update(id) {
+                    var myDataId = id;
+                    var myData = vm.blog;
+                    console.log(myDataId);
+                    vm.$blogsService.update(myDataId, myData, _updateSuccess, _onError);
+                }
+
+
+                function _updateSuccess(response) {
+                    console.log("Update Success");
+                    window.alert("You have successfully updated!!");                    
+                    _changeSubmitText();                        
+                }
+
+
+                function _getById(id){
+                    var myDataId = id;
+                    console.log(myDataId);
+                    vm.$blogsService.getById(myDataId, _getByIdSuccess, _onError);
+                }
+
+
+                function _getByIdSuccess(data){
+                    vm.notify(function(){
+                        vm.blog = data.item;
+                        vm.insertId = data.item.id;
+                    });
+                }
+
+
+                function _onError(response) {
+                    console.log("Insert Failed");
+                }
+
+
+                function _resetData(){
+                    vm.blog = angular.copy(vm.resetObject);
+                }
+            }
+        })();
+
+    </script>
+}
