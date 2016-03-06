@@ -1,5 +1,4 @@
-
-@model Datalus.Web.Models.ViewModels.ItemViewModel<int>
+@model Sabio.Web.Models.ViewModels.ItemViewModel<int>
 
 @{
     ViewBag.Title = "Blog";
@@ -14,42 +13,41 @@
         </h2>
     </div>
 </div>
-<div class="container">
-    <div class="row">
-        <div class="col-md-9 bordered-right">
-            <div class="col-md-9">
-                <div class="block full block-alt-noborder">
-                    <form id="frmContainer">
-                        <div class="form-group ">
-                            <input type="text" class="form-control id" id="blogId" name="Id" value="@Model.Item" @*style="display:none;"*@ />
-                        </div>
-                        <div class="form-group">
-                            <label for="inputTitle">Title</label>
-                            <input type="text" class="form-control title" id="txtTitle" name="Title" placeholder="Enter Title" />
-                        </div>
-                        <div class="form-group">
-                            <label for="inputAuthor">Author</label>
-                            <input type="text" class="form-control author" id="txtAuthor" name="Author" placeholder="Enter Your Name" />
-                        </div>
-                        <div class="form-group">
-                            <label for="inputMessage">Blog Message</label>
-                            <textarea type="textarea" class="form-control message" id="txtBlog" rows="12" name="Message" placeholder="Enter Your Message"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="inputTags">Tags</label>
-                            <select style="width:100%" data-input="select2-tags" multiple="" tabindex="-1" name="tagIds" class="select2-hidden-accessible tagsDropDown" id="tagsGetById" aria-hidden="true">                              
-                            </select>
-                        </div>
-                        
-                        <button type="button" class="btn btn-primary" id="cmdSubmit">Submit</button>
-                        <button type="button" class="btn btn-default" id="cmdReset">Reset Form</button>
-                    </form>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="block full block-alt-noborder">
+            <br />
+            <form id="frmContainer">
+                <input type="hidden" id="blogId" name="Id" value="@Model.Item" />
+                <div class="form-group">
+                    <label for="inputTitle">Title</label>
+                    <input type="text" class="form-control title1" id="txtTitle" name="Title" placeholder="Enter Your Title" />
                 </div>
-            </div>
+
+                <div class="form-group">
+                    <label for="inputAuthor">Author</label>
+                    <input type="text" class="form-control author" id="txtAuthor" name="Author" placeholder="Enter Your Name" />
+                </div>
+
+                <div class="form-group">
+                    <label for="inputMessage">Blog Message</label>
+                    <textarea type="textarea" class="form-control message" id="txtBlog" rows="12" name="Message" placeholder="Enter Your Message"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputTags">Tags</label>
+                    <select style="width:100%" data-input="select2-tags" multiple="" tabindex="-1" name="tagIds" class="select2-hidden-accessible tagsDropDown" id="tagsGetById" aria-hidden="true"></select>
+                </div>
+                <button type="button" class="btn btn-primary" id="cmdSubmit">Submit</button>
+                <button type="button" class="btn btn-default" id="cmdReset">Reset Form</button>
+            </form>
         </div>
     </div>
 </div>
 <div class="alert" id="msgWindow"></div>
+
+
 @section Scripts {
     <script src="~/Scripts/jquery.validate.js"></script>
     <script src="~/Scripts/datalus.services.blog.js"></script>
@@ -58,15 +56,12 @@
     <script type="text/javascript">
         datalus.page.startUp = function () {
             console.log("Start");
-            
+      
             datalus.page.initializeValidation();
-            //  Click handlers to the blog form's submit buttons
-            $("#cmdSubmit").on("click", datalus.page.handlers.onSubmitBlogForm);
-            $("#cmdReset").on("click", datalus.page.handlers.onResetBlogForm);
-            
             datalus.services.tags.ajaxGetAll(datalus.page.getAllTagsSuccess); 
             datalus.page.getBlogDataForPopulating();
             datalus.page.tagsInputField();
+            
         };
 
        
