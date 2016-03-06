@@ -1,4 +1,4 @@
-@model Sabio.Web.Models.ViewModels.ItemViewModel<int>
+@model datalus.Web.Models.ViewModels.ItemViewModel<int>
 
 @{
     ViewBag.Title = "Blog";
@@ -57,10 +57,14 @@
         datalus.page.startUp = function () {
             console.log("Start");
       
-            datalus.page.initializeValidation();
-            datalus.services.tags.ajaxGetAll(datalus.page.getAllTagsSuccess); 
-            datalus.page.getBlogDataForPopulating();
             datalus.page.tagsInputField();
+            datalus.services.tags.ajaxGetAll(datalus.page.getAllTagsSuccess); //need to change name to getAllTags
+            datalus.page.initializeValidation();            
+            datalus.page.getBlogDataForPopulating();
+            
+            //  attach a click handler to the form's submit button
+            $("#cmdSubmit").on("click", datalus.page.handlers.onSubmitBlogForm);
+            $("#cmdReset").on("click", datalus.page.handlers.onResetBlogForm);
             
         };
 
