@@ -33,7 +33,7 @@ datalus.services.tags.edit = function (id, formData, onSuccess, onError) {
 }
 
 
-datalus.services.tags.ajaxGetAll = function (onSuccess) {
+datalus.services.tags.ajaxGetAll = function (onSuccess, onError) {
 
     var url = "/api/tagcenter";
     var settings = {
@@ -41,6 +41,7 @@ datalus.services.tags.ajaxGetAll = function (onSuccess) {
 		, contentType: "application/x-www-form-urlencoded; charset=UTF-8"
 		, dataType: "json"
 		, success: onSuccess
+		, error: onError
 		, type: "GET"
     };
     $.ajax(url, settings);
