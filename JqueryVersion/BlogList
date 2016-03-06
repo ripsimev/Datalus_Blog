@@ -1,123 +1,89 @@
 @{
     ViewBag.Title = "List";
-    //Layout = null;
+   
 }
 
 <div class="content-body">
     <div class="row">
-        <div class="col-md-10">
-            <h3 style="color:black">
-                Blogs & Articles<a href="/blog/add" type="button"
-                                   class="btn btn-primary col-md-offset-10 cmdAdd">
-                    <i class="icon-plus fa-fw"></i> Add
-                </a>
-            </h3>
+        <div class="col-md-10" style="padding-bottom:20px;">
+            <h3 style="text-align:center;">DATALUS BLOGS</h3>
         </div>
+
+
         <div class="col-md-9 bordered-right">
             <div class="hidden-container-background">
                 <div class="panel-heading">
-                    <div id="resultsTable2">
+                    <a href="/blogs/add" type="button" class="btn btn-info btn-bordered cmdAdd">New Blog</a>
+                    <div style="padding-bottom:20px;"></div>
+                    <div id="blogsList">
                         <input type="hidden" class="form-control id" id="blogId" name="Id" value="" />
                     </div>
                 </div>
             </div>
         </div>
+
+
         <div class="col-md-3">
-            <h5 class="text-left"><strong>Featured Posts</strong></h5>
-            <div class="col-md-11 featuredPosts"></div>
-            <h5 class="text-left "><strong>Popular Tags</strong></h5>
-            <div class="col-md-11 popularTags">
+            <h5 class="text-left"><strong>Popular Posts</strong></h5>
+            <div class="col-md-11">
+                <p class="blog1"><a href="#">Learn to code with us and earn college credit at Antioch University</a></p>
+                <p class="blog2"><a href="#">Where do you see yourself in five years?</a></p>
+                <p class="blog3"><a href="#">Build - 70 Days of Code</a></p>
+                <br />
             </div>
+            
+            
         </div>
-        <a href="#" class="ml-2x" ><span class="tags"></span></a>
     </div>
 </div>
+
+//////  CLONE TEMPLATE FOR BLOG   /////////////////////////////////////////////////////////////////////////////
+    <script type="text/template" id="commentTemplate">
+        <div class="panel panel-body fade in panel-default blogContainer">
+            <div>
+                <div id="id" class="hidden"></div>
+                <p class="pull-right">
+                    <i class="icon-calendar fa-fw"></i><span class="comment-date"> </span>
+                <p class="comment-meta">
+                    by: <a href="#" class="mr-2x"></a>
+                    <div class="pull-right myTags">
+                    </div>
+                    <h4 class="comment-content"></h4>
+                <p class="comment-body">
+                </p>
+            </div>
+            <div class=" pull-right">
+                <a href="javascript:void(0)" type="button" class="btn btn-default btn-bordered cmdEdit">
+                    <i class="icon-note fa-fw"></i>Edit
+                </a>
+                <a href="javascript:void(0)" type="button" class="btn btn-danger cmdDelete">Delete</a>
+            </div>
+        </div>
+    </script>
 
 
 @section Scripts
         {
     <script src="~/Scripts/jquery.validate.js"></script>
     <script src="~/Scripts/datalus.services.blog.js"></script>
-    <script src="~/Scripts/datalus.services.tags.js"></script>
     <script src="~/Wrapkit/scripts/moment.js"></script>
     <script type="text/javascript">
-
         datalus.page.startUp = function () {
             console.log("Start");
 
             datalus.services.blog.getAllBlogs(datalus.page.onGetAllSuccess, datalus.page.onError);
             $(document).on("click", ".cmdDelete", datalus.page.handlers.onDeleteBlog);
-            datalus.services.tags.ajaxGetAll(datalus.page.getAllTagsSuccess, datalus.page.onError); 
-            $("[href]").on("click", "a", datalus.page.handlers.showBlogsWithMatchingTags);
         };
 
-
-        datalus.page.showBlogsWithMatchingTags = function (e) {
-            e.preventDafault();
-            console.log("Get blogs with matching tags");
-            
-            var targetTagLink = $("#blogId").closest(".popularTags").val(); 
-            var tagLinkId = targetTagLink;
-            var matchingTags = $("#blogId").val();
-            if (tagLinkId === matchingTags) { 
-                datalus.services.blog.getById(tagLinkId, datalus.page.onGetByIdSuccess, datalus.page.onError);
-            }
-        }
-
-
-        datalus.page.onGetByIdSuccess = function (data, textStatus, jqXHR) {
-            console.log("get blog data");
-            datalus.page.postBlogsByTags(data.item.tags);
-        }
-
-
-        datalus.page.postBlogsByTags = function (data) {
-            var newPost = $(".popularTags");
-            newPost.find("#blogId").html(data.id);
-            newPost.find(".comment-content").html(data.title);
-            newPost.find(".comment-meta a").html(data.author);
-            newPost.find(".comment-date").html(data.date);
-            newPost.find(".comment-body").html(data.message);
-            newPost.find(".comment-avatar img").attr("src", data.img);
-            newPost.find(".cmdEdit").attr("href", "/blog/" + data.id + "/edit");
-            return newPost;
-        }
-
-
-        datalus.page.getAllTagsSuccess = function (data, status, xhr) {
-            console.log(JSON.stringify(data));
-            for (var i = 0; i < data.length; i++) {
-                datalus.page.renderTags(data[i]);
-            }
-        }
-
-
-
-        //////  GET ALL BLOGS  ///////////////////////////////////////////////////////////////////////////////////////
-        datalus.page.onGetAllSuccess = function (data, textStatus, jqXHR) {
+        //////  GET ALL BLOGS LIST  ///////////////////////////////////////////////////////////////////////////////////////
+        datalus.page.onGetAllSuccess = function (data, textStatus) {
             console.log("data: " + data);
             console.log("textStatus: " + textStatus);
-            console.log("jqXHR: " + jqXHR);
-            if (data && data.items) {
+            if (data.items) {
                 for (var i = 0; i < data.items.length; i++) {
-                    datalus.page.postBlogs(data.items[i]); //posts all blogs on list
-                    if (data.items[i].isFeatured === true) {
-                        datalus.page.renderFeaturedBlog(data.items[i]);
-                    }
+                    datalus.page.postBlogs(data.items[i]); 
                 }
             }
-        }
-
-
-        datalus.page.renderFeaturedBlog = function (blog) {
-            var link = "<p><a href ='/blog/" + blog.id + "'>" + blog.title + "</a></p>";
-            $(".featuredPosts").append(link);
-        }
-
-
-        datalus.page.renderTags = function (dataTag) {
-            var tagLink = "<p><a href ='/blog/list/" + dataTag.id + "'>" + dataTag.tagName + "</a></p>";
-            $(".popularTags").append(tagLink);
         }
 
 
@@ -126,11 +92,7 @@
             return $($("#commentTemplate").html()).clone();
         }        
 
-        datalus.page.getTagClone = function () {
-            return $($("#tagTemplate").html()).clone();
-        }
-        
-        
+
         datalus.page.postBlogs = function (data) {
             console.log(data);
             var newPost = datalus.page.getClone();
@@ -143,24 +105,8 @@
             newPost.find(".comment-avatar img").attr("src", data.img);
             newPost.find(".cmdEdit").attr("href", "/blog/" + data.id + "/edit");
             
-            if (data.tags) {
-                datalus.page.populateTagsForBlogItem(data, newPost);
-            }
-            $("#resultsTable2").append(newPost);
+            $("#blogsList").append(newPost);
             return newPost;
-        }
-
-
-        datalus.page.populateTagsForBlogItem = function (data, newPost) {
-            for (var x = 0; x < data.tags.length; x++) {
-                var tagsClone = datalus.page.getTagClone();//cloning the new tag template
-                var currentTag = data.tags[x];
-                if (currentTag.approved === true) {
-                    tagsClone.attr("href", "/blog/list/" + currentTag.id);
-                    tagsClone.find(".tag-location").html(currentTag.name); 
-                    newPost.find(".myTags").append(tagsClone);  
-                }
-            }
         }
 
 
@@ -183,40 +129,6 @@
             console.log("jqXHR: " + jqXHR);
         }
 
-    </script>
-    
-    
-    //////  CLONE TEMPLATE FOR BLOG   /////////////////////////////////////////////////////////////////////////////
-    <script type="text/template" id="commentTemplate">
-        <div class="panel panel-body fade in panel-default blogContainer">
-            <div>
-                <div id="id" class="hidden"></div>
-                <p class="pull-right">
-
-                    <i class="icon-calendar fa-fw"></i><span class="comment-date"> </span>
-                    <div class="comment-avatar media-left">
-                        <img src="http://placehold.it/50x50" width="50" height="50" alt="avatar" class="img-responsive">
-                    </div>
-                <p class="comment-meta">
-                    by: <a href="#" class="mr-2x"></a>
-                    <div class="pull-right myTags">
-                    </div>
-                    <h4 class="comment-content"></h4>
-                <p class="comment-body">
-                </p>
-            </div>
-            <div class=" pull-right">
-                <a href="javascript:void(0)" type="button" class="btn btn-default btn-bordered cmdEdit">
-                    <i class="icon-note fa-fw"></i>Edit
-                </a>
-                <a href="javascript:void(0)" type="button" class="btn btn-danger cmdDelete">Delete</a>
-            </div>
-        </div>
-    </script>
-
-
-    <script type="text/template" id="tagTemplate">
-        <a href="#" class="ml-2x tagTemplate"><strong>#</strong><span class="tag-location"></span></a>
     </script>
 
 }
