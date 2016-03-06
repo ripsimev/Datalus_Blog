@@ -1,7 +1,7 @@
 @{
     ViewBag.Title = "List";
-   
 }
+
 
 <div class="content-body">
     <div class="row">
@@ -37,6 +37,7 @@
     </div>
 </div>
 
+
 //////  CLONE TEMPLATE FOR BLOG   /////////////////////////////////////////////////////////////////////////////
     <script type="text/template" id="commentTemplate">
         <div class="panel panel-body fade in panel-default blogContainer">
@@ -63,7 +64,7 @@
 
 
 @section Scripts
-        {
+{
     <script src="~/Scripts/jquery.validate.js"></script>
     <script src="~/Scripts/datalus.services.blog.js"></script>
     <script src="~/Wrapkit/scripts/moment.js"></script>
@@ -74,6 +75,7 @@
             datalus.services.blog.getAllBlogs(datalus.page.onGetAllSuccess, datalus.page.onError);
             $(document).on("click", ".cmdDelete", datalus.page.handlers.onDeleteBlog);
         };
+
 
         //////  GET ALL BLOGS LIST  ///////////////////////////////////////////////////////////////////////////////////////
         datalus.page.onGetAllSuccess = function (data, textStatus) {
@@ -119,9 +121,11 @@
             console.log("deleting");
         }
 
+
         datalus.page.onDeleteSuccess = function () {
             $("#id").closest(".blogContainer").remove();
         }
+
 
         datalus.page.onError = function (jqXHR, textStatus, errorThrown) {
             console.log("errorThrown: " + errorThrown);
