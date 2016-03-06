@@ -1,8 +1,8 @@
 @model Datalus.Web.Models.ViewModels.ItemViewModel<int>
+
 @{
     ViewBag.Title = "Blogs";
 }
-
 
 <div data-ng-controller="blogsController as dashboard">
     <h2 id="pageTitle"><span ng-bind="dashboard.pageTitle" class="ng-binding"></span> Blog</h2>
@@ -28,7 +28,7 @@
                                        class="form-control ng-class:{'error': dashboard.showNewBlogErrors && !dashboard.blogForm.title.$valid}"
                                        id="txtTitle"
                                        name="title"
-                                       placeholder="Enter Title"
+                                       placeholder="Enter Your Title"
                                        ng-model="dashboard.blog.title"
                                        required
                                        ng-required="true"
@@ -104,11 +104,9 @@
 
 
 @section Scripts {
-
     <script src="~/Scripts/datalus.services.blog.js"></script>
     <script src="~/Scripts/datalus.services.tags.js"></script>
     <script type="text/javascript">
-    
     
        //  BLOG SERVICE  ///////////////////////////////////////////////////////////////////////////////////////
         (function () {
@@ -126,7 +124,6 @@
             }
         })();
 
-
         //  BLOG TAG SERVICE  ///////////////////////////////////////////////////////////////////////////////////////
         (function () {
             "use strict";
@@ -142,7 +139,6 @@
             }
         })();
 
-
         //  BLOG CONTROLLER  ///////////////////////////////////////////////////////////////////////////////////////
         (function () { 
             "use strict";
@@ -157,7 +153,7 @@
                 var vm = this;
                 vm.$blogsService = $blogsService;
                 vm.$tagsService = $tagsService;
-                vm.$scope = $scope; //similar to dot notation object
+                vm.$scope = $scope; 
                 vm.blogForm = null;
                 vm.showNewBlogErrors = false;
                 vm.insertDataSuccessfully = false;
@@ -187,20 +183,17 @@
 
                 _initializeId();
 
-
                 function _initializeId() {
                     vm.pageTitle = "New";
                     if (@Model.Item > 0 ){
                         vm.pageTitle = "Edit";
                     }
                     if(@Model.Item != "0"){
-                        //console.log(vm.id);
                         vm.id = @Model.Item;
                         vm.getById(vm.id);
                     }
                     vm.$tagsService.ajaxGetAll(_getTagsSuccess, _getTagsError);
                 }
-
 
                 //TAG FUNCTIONS//////////////////////////////////////////////////////////////////////////////////
                 function _getTagsSuccess(data){
@@ -210,11 +203,9 @@
                     });
                 }
 
-
                 function _getTagsError(response){
                     console.log(response);
                 }
-
 
                 function _getTagIds(){
                     vm.blog.tagIds=[];
@@ -225,12 +216,9 @@
                 }
                 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-
                 function _changeSubmitText() {
-                    //$scope.buttonText = "Update";                   
                     vm.pageTitle = "Edit";
                 }
-
 
                 function _getId(){
                     var id;
@@ -244,7 +232,6 @@
                     return id;
                 }
 
-
                 function _submitData() {
                     console.log("submit clicked");
                     vm.showNewBlogErrors = true;
@@ -255,31 +242,28 @@
                         if (id === 0) {
                             console.log("insert");
                             vm.getTagIds();
-                            vm.insert(); //function that calls your ajax
+                            vm.insert(); 
                             vm.insertDataSuccessfully = true;
                             
                         } else {
                             console.log(id);
                             vm.getTagIds();                            
-                            vm.update(id); //add update Ajax here
+                            vm.update(id); 
                             
                         }
                     }
                 }
-
 
                 function _insert() {
                     var myData = vm.blog;                    
                     vm.$blogsService.insert(myData, _insertSuccess, _onError); 
                 }
 
-
                 function _insertSuccess(data) {
                     console.log("Insert Success");
                     console.log(data);
                     vm.insertId = data.item;                                       
                 }
-
 
                 function _update(id) {
                     var myDataId = id;
@@ -288,20 +272,17 @@
                     vm.$blogsService.update(myDataId, myData, _updateSuccess, _onError);
                 }
 
-
                 function _updateSuccess(response) {
                     console.log("Update Success");
                     window.alert("You have successfully updated!!");                    
                     _changeSubmitText();                        
                 }
 
-
                 function _getById(id){
                     var myDataId = id;
                     console.log(myDataId);
                     vm.$blogsService.getById(myDataId, _getByIdSuccess, _onError);
                 }
-
 
                 function _getByIdSuccess(data){
                     vm.notify(function(){
@@ -310,11 +291,9 @@
                     });
                 }
 
-
                 function _onError(response) {
                     console.log("Insert Failed");
                 }
-
 
                 function _resetData(){
                     vm.blog = angular.copy(vm.resetObject);
