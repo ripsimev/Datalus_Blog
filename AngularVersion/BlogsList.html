@@ -1,0 +1,468 @@
+@{
+    ViewBag.Title = "BlogsList";
+}
+
+@section Styles{
+    <style rel="stylesheet">
+        .header-hue {
+            background-color: #FFFFFF;
+        }
+
+        .panel {
+            box-shadow: none;
+        }
+
+        .topPanel {
+            background-image: url("~/wrapkit/images/dummy/landing1.jpg");
+        }
+
+        .newBlogButton {
+            padding-right: 20px;
+            padding-top: 15px;
+            padding-bottom: 20px;
+        }
+
+        .thumbnail {
+            margin: auto;
+            max-width: 400px;
+            height: auto;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .titlePage {
+            color: white;
+        }
+    </style>
+}
+
+
+<div class="content-hero content-hero-new-height">
+    <img class="content-hero-embed" src="~/wrapkit/images/dummy/landing1.jpg" alt="cover">
+    <div class="content-hero-bar hero-bar-new-height">
+        <div class="container-fluid">
+            <div class="col-md-8">
+                <div class="float-bar">
+                    <h2 class="titlePage">Datalus Blogs</h2>
+                    <div class="pt-4x">
+                        <h4>See what other member of the Datalus community are thinking.</h4>
+                    </div>
+                </div>
+            </div>
+            @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+            {
+                <div>
+                    <a href="/blogs/create" type="button" class="newBlogButton pull-right">New Blog</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+<!-- Blogs Show All Post Button Starts -->
+<div class="content-body" data-ng-controller="blogsController as dashboard">
+    <div class="row">
+        <div ng-show="dashboard.showTagNameOnTop">
+            <div class="thumbnail bg-light">
+                <p>
+                    Showing posts with hashtag <strong><span ng-bind="{{dashboard.filterTag.name}}"></span></strong>.
+                    <a href="#" style="padding-left:15px;" ng-click="dashboard.showAllBlogsButton()">Show all posts</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Blogs Page Content Starts -->
+    <div class="page-content">
+        <div class="row">
+
+            <!-- Blogs Body Starts -->
+            <div data-ng-include="'blogsContainer.html'"></div>
+            <script type="text/ng-template" id="blogsContainer.html">
+                <div class="col-md-9 " ng-repeat="blog in dashboard.blogs">
+                    <div class="hidden-container-background">
+                        <div class="panel-heading">
+                            <div id="resultsTable2">
+                                <div class="panel panel-body fade in panel-default ">
+                                    <div>
+                                        <div id="id" class="hidden">{{blog.id}}</div>
+                                        <p class="pull-right">
+                                            <i class="icon-calendar fa-fw"></i><span class="comment-date">{{blog.dateAdded | date:"longDate"}}</span>
+                                            <div class="comment-avatar media-left kit-avatar kit-avatar-42">
+                                                <img ng-src="{{blog.photoUrl}}"
+                                                     width="50" height="50" alt="avatar" class="img-responsive" style="padding-bottom:5px">
+                                            </div>
+                                        <p class="comment-meta" style="padding-bottom:19px">
+                                        <p class="mr-2x">{{blog.author}}</p>
+
+                                        <a href="/blogs/{{blog.id}}/{{blog.slug}}"> <h3 class="comment-content">{{blog.title}}</h3></a>
+                                        <br />
+                                        <p class="comment-body" style="padding-bottom:5px">
+                                            {{blog.message}}
+                                        </p>
+
+                                        <a href="#" ng-repeat="selectedTag in blog.tags" style="padding-right:10px" ng-click="dashboard.populateBlogsBySelectedTags(selectedTag)">
+                                            #{{selectedTag.name}}
+                                        </a>
+
+                                        <div class="pull-right" ng-class="{ 'hidden': showButtons }">
+                                            <!--hidden is a property for the showbuttons obj-->
+                                            <a href="/blogs/{{blog.id}}/edit" type="button" class="btn btn-primary cmdEdit">
+                                                Edit
+                                            </a>
+                                            <a href="javascript:void(0)" type="button" class="btn btn-danger cmdDelete" value="remove"
+                                               ng-click="dashboard.openModal(blog.id)">Delete</a>
+                                        </div>
+                                        <div style="padding-bottom:30px"></div>
+
+                                        <!--ACCORDION DROP DOWN-->
+                                        <uib-accordion close-others="false">
+                                            <uib-accordion-group is-open="status.open" panel-class="header-hue">
+                                                <uib-accordion-heading>
+                                                    <button class="btn btn-icon btn-default"
+                                                            style="margin: auto; width: 100%" title="Read More"
+                                                            ng-click="showButtons =  !showButtons">
+                                                        <span class="dotted"></span>
+                                                        <span class="dotted"></span>
+                                                        <span class="dotted"></span>
+                                                    </button>
+                                                </uib-accordion-heading>
+
+                                                <!--APPENDS COMMENT TEMPLATE-->
+                                                <div ng-include="'childComment.html'" style="padding-left:50px"></div>
+
+                                                <!--COMMENT FORM-->
+                                                <div style="padding-bottom:30px"></div>
+                                                <button type="button" class="btn btn-default" @*ng-click="showButtons = !showButtons"*@
+                                                        ng-click="dashboard.activateCommentForm(blog)">
+                                                    {{dashboard.textOnButton}}
+                                                </button>
+                                                <div style="padding-bottom:30px"></div>
+                                                <form id="frmCommentContainer" name="dashboard.commentForm" ng-show="blog.showCommentForm === true" novalidate>
+
+                                                    <div class="form-group">
+                                                        <label for="inputAuthor">Author</label>
+                                                        <input type="text" class="form-control author"
+                                                               id="txtAuthor"
+                                                               name="author"
+                                                               placeholder="Enter Your Name"
+                                                               ng-model="dashboard.comment.author"
+                                                               ng-required="true"
+                                                               maxlength="50" />
+                                                        <div role="alert" class="help-inline error">
+                                                            <span class="error" ng-show="dashboard.showNewCommentErrors && dashboard.commentForm.author.$error.maxlength">Must be a maximum of 20 characters</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <label for="inputMessage">Add Comment</label>
+                                                        <textarea type="textarea" class="form-control message"
+                                                                  id="txtBlog"
+                                                                  rows="10"
+                                                                  name="message"
+                                                                  placeholder="Enter Your Message"
+                                                                  ng-model="dashboard.comment.message"
+                                                                  ng-required="true"
+                                                                  minlength="2"
+                                                                  maxlength="1000"></textarea>
+                                                        <div role="alert" class="help-inline error">
+                                                            <span class="error" ng-show="dashboard.showNewCommentErrors && dashboard.commentForm.message.$error.minlength">Must be a minimum of 2 characters</span>
+                                                            <span class="error" ng-show="dashboard.showNewCommentErrors && dashboard.commentForm.message.$error.maxlength">Must be a maximum of 1000 characters</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div style="padding-top:30px;">
+                                                        <button type="submit" class="btn btn-success" ng-click="dashboard.publishClick(blog.id)" id="cmdPublish">Publish</button>
+                                                        @*<button type="button" class="btn btn-default" id="cmdReset" data-ng-click="dashboard.resetData()">Reset</button>*@
+                                                    </div>
+                                                </form>
+                                            </uib-accordion-group>
+                                        </uib-accordion>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </script>
+            <!-- Blogs Body Ends -->
+            <!-- List Popular Posts Starts -->
+            <div ng-include="'sideTags.html'"></div>
+            <script type="text/ng-template" id="sideTags.html">
+                <div class="container-fluid">
+                    <h5 class="text-left"><strong>Popular Posts</strong></h5>
+                    <a href="#" ng-repeat="featuredBlogs in dashboard.blogs | limitTo:3 | orderBy:random "
+                       ng-click="dashboard.populateBlogsBySelectedBlogs(featuredBlogs.id)">
+                        {{featuredBlogs.title}}<br />
+                    </a>
+
+                    <!-- List Popular Tags Starts -->
+                    <h5 class="text-left" style="padding-top:25px"><strong>Popular Tags</strong></h5>
+                    <a href="#" ng-repeat="popularTags in dashboard.popularTags" ng-click="dashboard.populateBlogsBySelectedTags(popularTags)">
+                        #{{popularTags.name}}<br />
+                    </a>
+                </div>
+            </script>
+            <!-- List Popular Tags Ends -->
+        </div>
+    </div>
+</div>
+
+<!-- Child Comment Template -->
+<script type="text/ng-template" id="childComment.html">
+    <div class="panel panel-body fade in panel-default" ng-repeat="comment in blog.comments">
+        <div id="id" class="hidden">{{comment.id}}{{comment.ownerId}}{{comment.ownerTypeId}}</div>
+
+        <div class="comment-avatar media-left kit-avatar kit-avatar-42">
+            <img ng-src="{{comment.photoUrl}}" width="50" height="50" alt="pic"
+                 class="img-responsive" style="padding-bottom:5px">
+        </div>
+        <p class="comment-meta" style="padding-bottom:19px">
+            <a href="#" class="mr-2x">{{comment.firstName}} {{comment.lastName}}</a>
+        <p><i class="icon-calendar fa-fw"></i><span class="comment-date">{{comment.dateAdded | date:"longDate"}}</span></p>
+
+        <p class="comment-body" style="padding-bottom:5px">
+            {{comment.message}}
+        </p>
+    </div>
+</script>
+
+
+<!-- Delete Confirmation Modal Template -->
+<script type="text/ng-template" id="deleteModal.html">
+    <div class="modal-header">
+        <h3 class="modal-title" style="text-align:center;">Delete Confirmation</h3>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+        <p>Are you sure you want to permanently delete the record?</p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" ng-click="modalCon.cancelDelete()" class="btn btn-default" id="cmdDeleteCancel">Cancel</button>
+        <button type="button" ng-click="modalCon.confirmDelete()" class="btn btn-primary" id="cmdDeleteConfirm">OK</button>
+    </div>
+</script>
+
+@section Scripts {
+    <script type="text/javascript" src="/Scripts/sabio.services.blog.js"></script>
+    <script type="text/javascript" src="/Scripts/sabio.services.comment.js"></script>
+    <script type="text/javascript" src="/Scripts/app/services/blogsService.js"></script>
+    <script type="text/javascript" src="/Scripts/app/services/commentsService.js"></script>
+    <script type="text/javascript" src="/Scripts/sabio/core/services/alert.service.js"></script>
+
+    <script type="text/javascript">
+        // DELETE MODAL CONTROLLER //////////////////////////////////////////////////////////////////////
+        (function () {
+            "use strict";
+            angular.module(APPNAME)
+                .controller('deleteModalController', DeleteModalController);
+            DeleteModalController.$inject = ['$scope', '$baseController', '$uibModalInstance']
+            function DeleteModalController($scope, $baseController, $uibModalInstance) {
+                var vm = this;
+                $baseController.merge(vm, $baseController);
+                vm.$scope = $scope;
+                vm.$uibModalInstance = $uibModalInstance;
+                
+                vm.confirmDelete = function () {
+                    vm.$uibModalInstance.close();
+                };
+
+                vm.cancelDelete = function () {
+                    vm.$uibModalInstance.dismiss();
+                };
+            }
+        })();
+
+
+        // BLOG LIST CONTROLLER //////////////////////////////////////////////////////////////////////
+        (function () {  
+            "use strict";
+            angular.module(APPNAME)
+                .controller('blogsController', BlogsController);  
+            BlogsController.$inject = ['$scope', '$baseController', '$blogsService', '$commentService', '$uibModal']; 
+            function BlogsController($scope, $baseController, $blogsService, $commentService, $uibModal) { 
+                var vm = this;
+
+                $baseController.merge(vm, $baseController);    
+                vm.$blogsService = $blogsService;
+                vm.$commentService = $commentService;
+                vm.$uibModal = $uibModal;
+                vm.$scope = $scope;
+                vm.notify = vm.$blogsService.getNotifier($scope); 
+
+                vm.blogs = null;
+                vm.featuredBlogs = null;
+                vm.popularTags = null;
+                vm.filterTag = null;
+                vm.comment = {};
+                vm.showTagNameOnTop = false;
+
+                vm.textOnButton = "Add Comment";
+                showBlogs();
+
+                vm.getPopularTagsSuccess = _getPopularTagsSuccess;
+                vm.populateBlogsBySelectedTags = _populateBlogsBySelectedTags;
+                vm.populateBlogsBySelectedBlogs = _populateBlogsBySelectedBlogs;
+                vm.populateBlogsBySelectedBlogSuccess = _populateBlogsBySelectedBlogSuccess;
+                vm.readMore = _readMore;
+                vm.getUserProfileIdSuccess = _getUserProfileIdSuccess;
+                vm.getOwnerTypeIdSuccess = _getOwnerTypeIdSuccess;
+                vm.showAllBlogsButton = _showAllBlogsButton;
+                vm.activateCommentForm = _activateCommentForm;
+
+                vm.readMore = _readMore;
+                vm.publishClick = _publishClick;
+                vm.commentInsertSuccess = _commentInsertSuccess;
+                vm.commentForm = null;
+                vm.showNewCommentErrors = false;
+                vm.resetObject = {};
+
+                vm.deleteBlog = _deleteBlog;
+                vm.deleteSuccess = _deleteSuccess;
+                vm.openModal = _openModal;             
+
+                function _showAllBlogsButton() {
+                    window.location.replace("/blogs");
+                }
+
+                function showBlogs() {
+                    vm.$blogsService.getAllBlogs(_getAllBlogsSuccess, _onError); 
+                    vm.$blogsService.getTagsUsedByBlogs(_getPopularTagsSuccess, _onTagsError); 
+                }
+
+                function _getUserProfileIdSuccess(data) {
+                    vm.comment.ownerId = data.item.id;
+                }
+
+                function _getOwnerTypeIdSuccess(data) {
+                    vm.comment.ownerTypeId = data.item.roleId;
+                }
+
+                function _getAllBlogsSuccess(data) {
+                    console.log("List All Blogs Success");
+                    vm.notify(function () {
+                        vm.blogs = data.items; 
+                        for (var i = 0; i < data.items.length; i++) {
+                            vm.blogs[i].showCommentForm = false;
+                        }
+                    });
+                    console.log(vm.blogs);
+                }
+
+                function _getPopularTagsSuccess(data) {
+                    console.log("Get Popular Tags List");
+                    vm.notify(function () {
+                        vm.popularTags = data.items;
+                    });
+                    console.log(vm.popularTags);
+                }
+
+                function _populateBlogsBySelectedTags(tag) {
+                    vm.showTagNameOnTop = true;
+                    vm.filterTag = tag;
+                    vm.$blogsService.getAllBlogsByTagId(tag.id, _populateBlogsBySelectedTagsSuccess, _onError);
+                }
+
+                function _populateBlogsBySelectedTagsSuccess(data) {
+                    console.log("Get all blogs by tagId");
+                    vm.notify(function () {
+                        vm.blogs = data.items;
+                    });
+                    console.log(vm.popularTags);
+                }
+
+                function _onTagsError(data) {
+                    console.log(data);
+                }
+
+                // POPULAR POST ON CLICK FUNCTIONS //////////////////////////////////////////////////////////               
+                function _populateBlogsBySelectedBlogs(blogId) {
+                    vm.$blogsService.getById(blogId, _populateBlogsBySelectedBlogSuccess, _onError); 
+                }
+
+                function _populateBlogsBySelectedBlogSuccess(data) {
+                    console.log(data, "Get blogs by blogId");
+                    vm.notify(function () {
+                        vm.blogs = [];
+                        vm.blogs[0] = data.item; 
+                    });
+                    console.log(vm.blogs);
+                }
+
+                $scope.random = function () {
+                    return 0.5 - Math.random();
+                }
+
+                function _onError(blogs) {
+                    console.log(blogs);
+                }
+
+                function _activateCommentForm(blog) {
+                    if (blog.showCommentForm == false) {
+                        blog.showCommentForm = true;
+                        vm.textOnButton = "Hide Form";
+                    } else if (blog.showCommentForm == true) {
+                        blog.showCommentForm = false;
+                        vm.textOnButton = "Add Comment";
+                    }
+                }
+
+                function _publishClick(id) {
+                    console.log("start publish");
+                    vm.showNewCommentErrors = true;
+                    vm.comment.ownerId = id; //added to get ownerId
+                    vm.comment.ownerTypeId = 1; //added to get ownerTypeId
+                    var myData = vm.comment;
+                    if (vm.commentForm.$valid) {
+                        console.log("comment form is valid");
+                        var id = 0
+                        if (id === 0) {
+                            console.log(myData);
+                            vm.$commentService.insert(myData, vm.commentInsertSuccess, vm.onError);
+                        } else {
+                            //console.log(id);
+                            //vm.$commentService.update(myId, myData, vm.commentUpdateSuccess, vm.onError);
+                        }
+                    }
+                    vm.comment = angular.copy(vm.resetObject);
+                }
+
+                function _commentInsertSuccess(data) {
+                    showBlogs();
+                }
+
+                // DELETE CONFIRMATION MODAL ////////////////////////////////////////////////////////////////////////////////////                
+                function _deleteBlog(id) {
+                    vm.$log.log("delete blog...");
+                    var index = vm.blogs.indexOf(id); //It doesn't remove at first but when you refresh, it does.
+                    vm.blogs.splice(id, 1);
+                    vm.$blogsService.deleteBlog(id, vm.deleteSuccess, vm.onError);
+                }
+
+                function _deleteSuccess(data, status, xhr) {
+                    vm.$log.log('delete success... ' + data);
+                    vm.$alertService.success("Record Deleted");
+                }
+
+                // Modal function
+                function _openModal(id) {
+                    vm.$sabio.blogId = id;
+                    var modalInstance = vm.$uibModal.open({
+                        animation: true,
+                        templateUrl: 'deleteModal.html',
+                        controller: 'deleteModalController as modalCon',
+                        size: 'sm',
+                    });
+
+                    modalInstance.result.then(function () {
+                        vm.deleteBlog(vm.$sabio.blogId);
+                    });
+                }
+            }
+        })();
+
+    </script>
+}
