@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style rel="stylesheet">
+
+header {
+    background-color:grey;
+    color:white;
+    text-align:center;
+    padding:5px;	 
+}
+
+section {
+    width:800px;
+    float:left;
+    padding:10px;	 	 
+}
+
+footer {
+    background-color:grey;
+    color:white;
+    clear:both;
+    text-align:center;
+    padding:5px;	 	 
+}
+
+.floating-box {
+    float: right;
+    width: 50px;
+    height: 70px;
+    margin: 20px;
+    border: 1px solid black; 
+    background-color: lightblue;
+}
+
+#thumbnail {
+    display:none;
+    width: 120px;
+    height: 170px;
+    margin: 20px;
+    border: 2px solid black; 
+    text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+<header>
+<h1>About Us</h1>
+</header>
+
+<section>
+<div id="thumbnail">Example</div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+<div class="floating-box"></div>
+</section>
+
+<footer>
+Copyright © FabFitFun.com
+</footer>
+
+<script>
+$(document).ready(function(){
+   var thumbnailClicked = $(".floating-box").click(function(){
+         $("#thumbnail").show();
+        if(thumbnailClicked){
+        $("#thumbnail").animate({left: '250px'});
+        }
+    });
+});
+</script> 
+
+</body>
+</html>
+
+
