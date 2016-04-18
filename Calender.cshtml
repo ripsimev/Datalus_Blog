@@ -1,0 +1,571 @@
+@model Sabio.Web.Models.ViewModels.MeetingViewModel
+
+@{
+    ViewBag.Title = "Calendar (Angular)";
+}
+
+@section Styles{
+
+    <link href="~/Content/calendarDemo.css" rel="stylesheet" />
+    <link href="~/Content/fullcalendar.css" rel="stylesheet" />
+    <style rel="stylesheet">
+        .tr {
+            opacity: 0.6;
+        }
+
+        .sidebarSearch {
+            -moz-transition: right .1s;
+            -webkit-transition: right .1s;
+            -o-transition: right .1s;
+            transition: right 1s;
+            width: 400px;
+            background-color: #E6E9ED;
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            right: -360px;
+            z-index: 1; /*It puts an element in front or the back of an element*/
+        }
+
+        .slide-out {          
+            transition: right 1s;
+            right: 0px;
+        }
+
+
+        .row1 div1 {
+            height: 200px;
+            -webkit-transition: width 0.3s ease, margin 0.3s ease;
+            -moz-transition: width 0.3s ease, margin 0.3s ease;
+            -o-transition: width 0.3s ease, margin 0.3s ease;
+            transition: width 0.3s ease, margin 0.3s ease;
+        }
+
+        .span0 {
+            width: 0;
+            margin-left: 0;
+        }
+
+        #colPush {
+            background-color: #A6BFBA;
+        }
+
+        #colMain {
+            background-color: #DE4124;
+        }
+
+        #trig {
+            margin: 50px;
+        }
+
+        .row1 div1 + div1 {
+            margin-left: 0;
+        }
+
+        .bigger{
+            font-size:20px;
+            padding-left:15px;
+        }
+        
+        .space{
+            padding-left:7px;
+        }
+    </style>
+}
+
+
+
+<h2>Master Calendar</h2>
+
+
+<a type="button" href="/meetings/create" style="padding-left:15px;">Create New</a>
+
+
+<div class="panel" panel-fill-color="true">
+    <div class="panel-body">
+        <div class="tab-content">
+            <div id="top-pages" class="tab-pane active fade in">
+                <p class="title">Calendar Legend</p>
+                <hr>
+                <div class="row">
+                    <div class="col-md-9">
+                        <div class="media-left fa fa-square bigger" style="color:darkorange"><span class="space">Other</span></div>
+                        <div class="media-left fa fa-square bigger" style="color:seagreen"><span class="space">Meet Up</span></div>
+                        <div class="media-left fa fa-square bigger" style="color:yellowgreen"><span class="space">Social</span></div>
+                        <div class="media-left fa fa-square bigger" style="color:indianred"><span class="space">Hackathon</span></div>
+                        <div class="media-left fa fa-square bigger" style="color:grey"><span class="space">Class Module</span></div>
+                        <div class="media-left fa fa-square bigger" style="color:steelblue"><span class="space">Info Session</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div ng-controller="meetingController as dashboard">
+    <div class="panel-heading" ng-include="'/calendarPage.html'"></div>
+    <script type="text/ng-template" id="/calendarPage.html">
+
+        <div class="row">
+            <div class="col-md-9">
+                <div class="well">
+                    <div>
+
+                    </div>
+
+                    <div class="row-fluid">
+                        <div class="calendar" ui-calendar="dashboard.calOptions" data-ng-model="dashboard.meetingSources"></div>                    
+                    </div>
+                </div>
+            </div>
+            
+            <div class="well col-lg-2" ng-show="dashboard.showMeetingView">
+                <p class="lead">Meeting View</p>
+                <div style="background-color: white;" ng-show="dashboard.meetingView">
+                    <h3 style="text-align:center; padding: 15px 10px 0px 10px;">{{dashboard.meeting.title}}</h3>
+                    <h5 style="text-align:center; padding: 0px 10px 0px 10px;">{{dashboard.meeting.description}}</h5>
+                    <h5 style="text-align:center; padding: 0px 10px 0px 10px;">{{dashboard.meeting.date | date:"fullDate"}}</h5>
+                    <h6 style="text-align:center; padding: 0px 10px 20px 10px;">{{dashboard.meeting.startTime | date:"shortTime"}}  {{dashboard.meeting.endTime | date:"shortTime"}}</h6>
+                </div>
+                <div style="padding-top:10px;"></div>
+            </div>
+
+            <div class="panel-heading" ng-include="'/searchForm.html'"></div>
+
+        </div>
+    </script>
+</div>
+
+
+<script type="text/ng-template" id="/searchForm.html">
+    @*<button class="btn btn-primary" ng-click="dashboard.click()"><i class="fa fa-angle-double-left"></i> Open Search Criteria</button>*@
+    <div class="container">
+        
+        <div class="sidebarSearch" ng-class="{'slide-out':dashboard.boolChangeClass}">
+            <form ng-submit="dashboard.searchRequest(dashboard.searchCriteria)">
+                <div style="padding-top:130px"></div>
+
+                <button class="btn btn-default" ng-click="dashboard.click()"><i class="fa fa-angle-left"></i>  <i class="fa fa-search"></i></button>
+                <div class="col-md-10 col-md-offset-1">
+                                        
+                        <p class="lead">Search By</p>
+                        <div class="form-group">
+                            <label for="campusId" class="control-label">Campus</label>
+                            <select class="form-control"
+                                    id="searchParameters"
+                                    data-ng-model="dashboard.searchCriteria.campusId"
+                                    ng-options="c.id as c.name for c in dashboard.campuses"
+                                    name="select"></select> <!--select as label for its value in an empty array-->
+                        </div>
+
+                        <div class="form-group">
+                            <label for="instructorIds" class="control-label">Coordinator(s)</label>
+                            <ui-select multiple ng-model="dashboard.searchCriteria.instructorIds">
+                                <ui-select-match placeholder="-- Any --">
+                                    {{$item.firstName + ' ' + $item.lastName}}
+                                </ui-select-match>
+                                <ui-select-choices repeat="item.id as item in dashboard.instructors | filter: $select.search">
+                                    <div ng-bind-html="item.firstName + ' ' + item.lastName"></div>
+                                </ui-select-choices>
+                            </ui-select>
+                        </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Meeting Format</label>
+                        <div style="padding-left:2px; padding-top:6px;">
+                           
+                            <label ng-repeat="(key, value) in dashboard.meetingFormats" style="font-weight: normal;">
+                                <input type="checkbox"
+                                       value="i"
+                                       ng-click="dashboard.meetingFormatCheck(value.id)">
+                                &emsp;{{value.name}}
+                            </label>
+                            
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Meeting Type</label>
+                        <div style="padding-left:2px; padding-top:6px;">                           
+                            <label ng-repeat="(key, value) in dashboard.meetingTypes" style="font-weight: normal;">
+                                    <input type="checkbox"
+                                   value="i"                                 
+                                   ng-click="dashboard.meetingTypeCheck(value.id)">
+                                &emsp;{{value.name}}
+                            </label>
+                                <div style="padding-top:20px;"></div>                          
+                        </div>
+                    </div>
+                        <button type="submit" id="cmdSearch" ng-click="dashboard.clickSearch()"class="btn btn-primary">Search</button>                   
+                </div>
+            </form>
+
+        </div>
+    </div>
+</script>
+
+<script type="application/json" id="meetingFormats">
+    @Html.RawJson(Model.MeetingFormats)
+</script>
+
+<script type="application/json" id="meetingTypes">
+    @Html.RawJson(Model.MeetingTypes)
+</script>
+
+
+
+@section pageInitScripts{
+    @*<script type="text/javascript">
+        sabio.extraNgDependencies = ['angularify.semantic.sidebar'];
+        </script>*@
+}
+
+@section Scripts{
+
+
+
+
+    <script src="/Wrapkit/scripts/moment.js"></script>
+    <script src="/Scripts/sabio.services.meeting.js"></script>
+    <script src="/Scripts/Sabio.Services.Instructors.js"></script>
+    <script src="~/Scripts/sabio.services.campuses.js"></script>
+    <script src="/Scripts/jquery.validate.js"></script>
+
+    <script src="/Scripts/calendar.js"></script>
+    <script src="/Scripts/fullcalendar.js"></script>
+    <script src="/Scripts/gcal.js"></script>
+
+    @*<script type="text/javascript">
+
+            sabio.page.meetingId = @Model.Item;
+        </script>*@
+
+    @*<script src="../Scripts/sabio.js" type="text/javascript"></script>
+        <script type="text/javascript">
+
+            sabio.page.startUp = function () {
+                console.log("Im only starting fresh");
+                $("#trig").on("click", sabio.page.handlers.sidebar); //3rd Part
+            }
+
+            sabio.page.handlers.sidebar = function () {
+                    $('#colMain').toggleClass('span12 span9');
+                    $('#colPush').toggleClass('span0 span3');
+            }
+        </script>*@
+
+
+    <script type="text/javascript">
+        // $meetingService
+        (function () {
+            "use strict";
+
+            angular.module(APPNAME)
+                .factory('$meetingsService', MeetingsServiceFactory);
+            MeetingsServiceFactory.$inject = ['$baseService', '$sabio'];    //  $sabio is a reference to sabio.page object which is created in sabio.js
+            function MeetingsServiceFactory($baseService, $sabio) {
+
+                var aSabioServiceObject = sabio.services.meeting;
+                var newService = $baseService.merge(true, {}, aSabioServiceObject, $baseService);
+                console.log("meeting service", aSabioServiceObject);
+                return newService;
+            }
+        })();
+
+        (function () {
+            "use strict";
+
+            angular.module(APPNAME)
+                .factory('$instructorService', InstructorServiceFactory);
+
+            InstructorServiceFactory.$inject = ['$baseService', '$sabio'];
+
+            function InstructorServiceFactory($baseService, $sabio) {
+                var aSabioServiceObject = sabio.services.instructors;
+                var newService = $baseService.merge(true, {}, aSabioServiceObject, $baseService);
+                console.log("instructor service", aSabioServiceObject);
+                return newService;
+            }
+        })();
+
+        (function () {
+            "use strict";
+
+            angular.module(APPNAME)
+                .factory('$officeHourService', OfficeHourServiceFactory);
+
+            OfficeHourServiceFactory.$inject = ['$baseService', '$sabio'];
+
+            function OfficeHourServiceFactory($baseService, $sabio) {
+                var aSabioServiceObject = sabio.services.officeHours;
+                var newService = $baseService.merge(true, {}, aSabioServiceObject, $baseService);
+                return newService;
+            }
+        })();
+
+        (function () {
+            "use strict";
+
+            angular.module(APPNAME)
+                .factory('$campusesService', CampusesServiceFactory);
+
+            CampusesServiceFactory.$inject = ['$baseService', '$sabio'];
+
+            function CampusesServiceFactory($baseService, $sabio) {
+                var aSabioServiceObject = sabio.services.campuses;
+                var newService = $baseService.merge(true, {}, aSabioServiceObject, $baseService);
+                return newService;
+            }
+        })();
+
+        (function () {
+            "use strict";
+
+            var app = angular.module(APPNAME);
+            app.requires.push('ui.calendar');
+
+            angular.module(APPNAME)
+                .controller('meetingController', MeetingController);
+            MeetingController.$inject = ['$scope', '$baseController', '$officeHourService', '$meetingsService', '$instructorService', '$campusesService',
+                'uiCalendarConfig', '$compile', '$uibTooltip'];
+
+            function MeetingController(
+              $scope
+              , $baseController
+              , $officeHourService
+              , $meetingsService
+              , $instructorService
+              , $campusesService
+              , uiCalendarConfig
+              , $compile
+              , $uibTooltip
+              ) {
+
+                var vm = this;
+
+                $baseController.merge(vm, $baseController);
+                vm.$scope = $scope;
+
+                vm.$meetingsService = $meetingsService;
+                vm.$campusesService = $campusesService;
+                vm.$instructorService = $instructorService;
+
+                vm.onGetMasterCalendarMeetings = _onGetMasterCalendarMeetings;
+                vm.alertOnEventClick = _alertOnEventClick;
+                vm.getAllCampuses = _getAllCampuses;
+                vm.getAllInstructors = _getAllInstructors;
+
+                //vm.changeMeetingDay = _changeMeetingDay;
+                //vm.changeMeetingDaySuccess = _changeMeetingDaySuccess;
+                vm.meetingTypeCheck = _meetingTypeCheck;
+                vm.meetingFormatCheck = _meetingFormatCheck;
+                vm.searchRequest = _searchRequest;
+                vm.getMeetingsByCampus = _getMeetingsByCampus;
+                //vm.changeMeetingDay = _changeMeetingDay;
+                //vm.changeMeetingDaySuccess = _changeMeetingDaySuccess;
+                vm.onGetError = _onGetError;
+
+                vm.meetingsArray = [];
+                vm.meeting = null;
+                vm.meetingSources = [vm.meetingsArray];
+
+                vm.campuses = [];
+                vm.instructors = null;
+                vm.meetingFormats = [];
+                vm.meetingTypes = [];
+
+                vm.calOptions = {
+                    editable: true, //allows to drag events around different days to change the date there on
+                    header: {   //this is whats going t appear on top of the calendar
+                        //we have a left field, a center field, and a right field
+                        // we can then give them a value, so each will give us a different feature
+                        center: 'title', //name of the month
+                        left: 'today,  prev,next',
+                        right: 'month,agendaWeek,agendaDay' //button that takes you to next month
+                    },
+                    deletable: true,
+                    eventClick: _alertOnEventClick
+                    //eventDrop: _changeMeetingDay,
+                };
+
+                vm.searchCriteria = {
+                    meetingTypeIds: []
+                    , meetingFormatIds: []
+                    , campusId: 0
+                    , instructorIds: []
+                    , startDate: '02/01/15'
+                    , endDate: '02/28/17'
+                };
+                vm.click = _click;
+                vm.showMeetingView = false;
+                vm.clickSearch = _clickSearch;
+
+
+                vm.notify = vm.$meetingsService.getNotifier($scope);
+
+                render();
+
+                function _clickSearch() {
+                    vm.boolChangeClass = !vm.boolChangeClass;                   
+                }
+
+                function _click() {
+                    vm.boolChangeClass = !vm.boolChangeClass;
+                    vm.showMeetingView = false;
+                }
+
+                function render() {
+                    vm.meetingView = false; //hides the white background for meeting view
+                    vm.$campusesService.getAll(vm.getAllCampuses, vm.onGetError);
+                    vm.$meetingsService.get(vm.onGetMasterCalendarMeetings, vm.onGetError);
+                    vm.$instructorService.getAll(vm.getAllInstructors, vm.onGetError);
+
+                    vm.meetingFormats = _htmlArrayToList1($("#meetingFormats").html());
+                    vm.meetingTypes = _htmlArrayToList2($("#meetingTypes").html());
+                }
+
+                function _meetingTypeCheck(id) {
+                    vm.searchCriteria.meetingTypeIds.push(id);
+                }
+
+                function _meetingFormatCheck(id) {
+                    vm.searchCriteria.meetingFormatIds.push(id);
+                }
+
+                function _searchRequest(searchData) {
+                    console.log(searchData)
+                    vm.meetingsArray.length = 0;
+                    vm.$meetingsService.search(searchData, vm.onGetMasterCalendarMeetings, vm.onGetError);
+                }
+
+                function _onGetMasterCalendarMeetings(data) {
+                    vm.notify(function () {
+                        vm.meeting = data.items;
+                        for (var i = 0; i < data.items.length; i++) {
+                            data.items[i].color = "#69C1D6";
+                            if (data.items[i].meetingTypeId === 1) {
+                                data.items[i].color = "steelBlue";
+                            } else if (data.items[i].meetingTypeId === 2) {
+                                data.items[i].color = "seaGreen";
+                            } else if (data.items[i].meetingTypeId === 3) {
+                                data.items[i].color = "yellowGreen";
+                            } else if (data.items[i].meetingTypeId === 4) {
+                                data.items[i].color = "indianRed";
+                            } else if (data.items[i].meetingTypeId === 5) {
+                                data.items[i].color = "grey";
+                            } else if (data.items[i].meetingTypeId === 6) {
+                                data.items[i].color = "darkOrange";
+                            }
+                            vm.meeting = {};
+                            var d = data.items[i].meetingDate;
+                            vm.meeting = {
+                                title: data.items[i].name,
+                                description: data.items[i].description,
+                                date: d,  //custom property
+                                color: data.items[i].color,
+                                startTime: data.items[i].startTime, //custom property
+                                endTime: data.items[i].endTime,   //custom property
+                                className: $(this).css('opacity', '1'),
+                                allDay: true
+                            };
+                            vm.meetingsArray.push(vm.meeting);
+                        }
+                    });
+                }
+
+                function _alertOnEventClick(data, jsEvent, view) {
+                    vm.meetingView = true; //shows the white background for meeting view
+                    for (var i = 0; i < vm.meetingsArray.length; i++) {
+                        vm.meetingsArray[i].className = $(this).css('opacity', '1');
+                    }
+
+                    data.className = $(this).css('opacity', '0.6');
+                    console.log(data.className);
+                    console.log(vm.meeting);
+                    vm.meeting = {
+                        title: data.title,
+                        description: data.description,
+                        date: data.date,  //custom property
+                        startTime: data.startTime, //custom property
+                        endTime: data.endTime,   //custom property
+                        className: data.className
+                    }
+
+                   
+                    vm.showMeetingView = true;
+                    if (vm.showMeetingView == false ) {
+                        vm.boolChangeClass = !vm.boolChangeClass;
+                    } 
+                                                               
+                    //if (vm.counter > 0) {
+                    //    vm.boolChangeClass = !vm.boolChangeClass;
+                    //}
+                    
+                }
+
+                function _getAllCampuses(data) {
+                    console.log(data);
+                    vm.notify(function () {
+                        vm.campuses = data.items;
+                        vm.campuses.unshift({ id: 0, name: "-- Any --" });
+                    });
+                }
+
+                function _getMeetingsByCampus() {
+                    vm.$meetingsService.getEventsByCampus(vm.searchCriteria, vm.onGetMasterCalendarMeetings, vm.onGetError);
+                }
+
+                //function _changeMeetingDay(data, delta, revertFunc) {
+                //    alert(data.title + " was dropped on " + data.start.format());
+
+                //    if (!confirm("Are you sure about this change?")) {
+                //        revertFunc();
+                //    } else {
+                //        console.log("ajax call (put) for meeting to change the date on this particular meeting");
+                //this needs a store proc, endpoint, meetings service, ajax put
+                @*meetingId = @Model.Id;*@
+                //vm.$meetingsService.put(meetingId, data, vm.changeMeetingDaySuccess, vm.onGetError);
+                //    }
+                //}
+
+                //function _changeMeetingDaySuccess(data) {
+                //    console.log(data);
+                //}
+
+                function _getAllInstructors(data) {
+                    console.log(data);
+                    vm.notify(function () {
+                        vm.instructors = data.items;
+                        vm.instructors.unshift({ id: 0, name: "-- Any --" });
+                    });
+                }
+
+                function _htmlArrayToList1(htmlArray) {
+                    console.log(htmlArray);
+                    var arr = JSON.parse(htmlArray);
+                    var result = [{ id: 0, name: "-- Any --" }];
+                    angular.forEach(arr, function (val, key) {
+                        result.push({ id: key, name: val });
+                    });
+                    return result;
+                }
+
+                function _htmlArrayToList2(htmlArray) {
+                    console.log(htmlArray);
+                    var arr = JSON.parse(htmlArray);
+                    var result = [];
+                    angular.forEach(arr, function (val, key) {
+                        result.push({ id: key, name: val });
+                    });
+                    return result;
+                }
+
+                function _onGetError(jqXhr, textStatus, errorThrown) {
+                    console.log(errorThrown);
+                }
+            }
+
+        })();
+
+    </script>
+}
